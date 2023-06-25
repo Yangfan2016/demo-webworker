@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>web worker</h1>
+    <script type="app/worker" id="workerDemo">
+        self.addEventListener('message', ev => {
+            const res = add(...ev.data.params);
+            console.log('worker',ev.data);
+            self.postMessage(res);
+        })
+        function add(...args) {
+            return args.reduce((acc, cur) =>  acc + cur, 0);
+        }   
+    </script>
+    <script>
+        // w1 内嵌方式引入
+        const blob = new Blob([workerDemo.textContent]);
+        const url = URL.createObjectURL(blob);
+        const worker = new Worker(url);
+        worker.addEventListener('message', (ev) => {
+            console.log('w1', ev.data);
+        });
+        worker.postMessage({
+            message: 'start',
+            params: [1, 2]
+        });
+
+        // w2 正常url引入
+        const w2 = new Worker("http://localhost:3000/public/worker-longtask.js");
+        w2.addEventListener('message', (ev) => {
+            console.log('w2', ev.data);
+        });
+        w2.postMessage('start');
+    </script>
+</body>
+
+</html>
